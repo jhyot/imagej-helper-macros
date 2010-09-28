@@ -1,3 +1,9 @@
+// ImageJ macro to measure average intensities of ring arrays.
+// Can handle single images or stacks of images.
+// Results can be written to text file for each individual ring (one row per ring, 
+// one file per slice in stack)
+// or as averaged values in a single file (one row per slice)
+
 origImg = getImageID();
 
 setBatchMode(true);
