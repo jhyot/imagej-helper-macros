@@ -85,6 +85,11 @@ if (nSlices() > 1) {
 	oneFile = false;
 }
 
+if (maxSlice < minSlice) {
+	setBatchMode(false);
+	exit("Ending slice must be equal or higher than starting slice");
+}
+
 // calculate x, y steps between rings
 stepx = ringDist * cos(angle);
 stepy = -1 * ringDist * sin(angle); // in image, "up" is negative y
