@@ -96,8 +96,10 @@ stepy = -1 * ringDist * sin(angle); // in image, "up" is negative y
 
 print("=========");
 print("Analyzing " + nRings + " x " + nRings + " array");
-print("Count intensity within radius " + rInt + " px, background radius " + rBg + " px");
-print("Grid angle: " + 180/PI*angle + " deg; distance between rings: " + ringDist + " px");
+print("Count intensity within radius " + rInt + " px");
+print("Background radius " + rBg + " px");
+print("Grid angle: " + 180/PI*angle + " deg");
+print("Distance between rings: " + ringDist + " px");
 print("First ring: x=" + x0 + " ; y=" + y0);
 print("x step size: " + stepx + " px; y step size: " + stepy + " px");
 
