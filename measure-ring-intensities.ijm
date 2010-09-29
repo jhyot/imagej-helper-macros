@@ -148,6 +148,9 @@ for (s = minSlice; s <= maxSlice; s++) {
 
 	if (DEBUG)
 		dbgSliceTime = getTime();
+	
+	showProgress((s-minSlice)/(maxSlice-minSlice));
+
 	setSlice(s);
 	
 	// If writing multiple files, open one for current slice
