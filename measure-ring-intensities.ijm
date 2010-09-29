@@ -142,6 +142,34 @@ if ((oneFile) || (nSlices() <= 1)) {
 if (DEBUG)
 	dbgTotTime = getTime();
 
+// Create ROIs for rings and background
+for (i = 0; i < nRings; i++) {   // "rows"
+	for (j = 0; j < nRings; j++) {    // within row
+		// set coord of ring to be selected
+		// first, step within row
+		currx = x0 + j*stepx;
+		curry = y0 + j*stepy;
+		
+		// then, step rows
+		currx -= i*stepy;
+		curry += i*stepx;
+		
+		// draw ring and background circles, add to ROI manager
+		// makeOval wants upper left corner of bounding rectangle as coords
+		makeOval(currx - rInt, curry - rInt, rInt*2, rInt*2);
+		roiManager("Add");
+		makeOval(currx - rBg, curry - rBg, rBg*2, rBg*2);
+		roiManager("Add");
+		
+		// Rename ROIs so they become slice-independent
+		k = i*nRings + j + 1;
+		roiManager("Select", roiManager("count") - 2);
+		roiManager("Rename", "r" + k);
+		roiManager("Select", roiManager("count") - 1);
+		roiManager("Rename", "b" + k);
+	}
+}
+
 // Iterate over slices, analyze them
 
 for (s = minSlice; s <= maxSlice; s++) {
@@ -178,25 +206,6 @@ for (s = minSlice; s <= maxSlice; s++) {
 		print(f, "xpos ypos intsum intavg bgint");
 	}
 	
-	for (i = 0; i < nRings; i++) {   // "rows"
-		for (j = 0; j < nRings; j++) {    // within row
-			// set coord of ring to be selected
-			// first, step within row
-			currx = x0 + j*stepx;
-			curry = y0 + j*stepy;
-			
-			// then, step rows
-			currx -= i*stepy;
-			curry += i*stepx;
-			
-			// draw ring and background circles, add to ROI manager
-			// makeOval wants upper left corner of bounding rectangle as coords
-			makeOval(currx - rInt, curry - rInt, rInt*2, rInt*2);
-			roiManager("Add");
-			makeOval(currx - rBg, curry - rBg, rBg*2, rBg*2);
-			roiManager("Add");
-		}
-	}
 	
 	roiManager("Deselect");
 	run("Select None");
@@ -268,7 +277,7 @@ for (s = minSlice; s <= maxSlice; s++) {
 	roiManager("Deselect");
 	run("Select None");
 	
-	// clean up before going to next slice
+	// If multiple files, write summary and close current file
 	if (!oneFile) {
 		print(f, "");
 		print(f, "intsum intsumsd intavg intavgsd bg bgsd");
@@ -281,16 +290,6 @@ for (s = minSlice; s <= maxSlice; s++) {
 	if (DEBUG)
 		showStatus("Slice " + (s-minSlice+1) + "/" + (maxSlice-minSlice+1) + ": " +
 				(getTime() - dbgSliceTime) + " ms");
-		
-	if ((nSlices() > 1) && (s < maxSlice)) {
-		// Delete all ROIs except first two.
-		// Leave ROIs on last iteration for manual control
-		// of ROI placement after the macro has run.
-		for (i = roiManager("count")-1; i > 1; i--) {
-			roiManager("select", i);
-			roiManager("delete");
-		}
-	}
 
 } // iterate slices
 
