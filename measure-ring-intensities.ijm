@@ -4,6 +4,8 @@
 // one file per slice in stack)
 // or as averaged values in a single file (one row per slice)
 
+DEBUG = true;
+
 origImg = getImageID();
 
 setBatchMode(true);
@@ -130,10 +132,15 @@ if ((oneFile) || (nSlices() <= 1)) {
 	dirPath = getDirectory("Choose directory for result files");
 }
 
+if (DEBUG)
+	dbgTotTime = getTime();
+
 // Iterate over slices, analyze them
 
 for (s = minSlice; s <= maxSlice; s++) {
 
+	if (DEBUG)
+		dbgSliceTime = getTime();
 	setSlice(s);
 	
 	// If writing multiple files, open one for current slice
@@ -260,6 +267,10 @@ for (s = minSlice; s <= maxSlice; s++) {
 			bgAvg + " " + bgSd);
 		File.close(f);
 	}
+	
+	if (DEBUG)
+		showStatus("Slice " + (s-minSlice+1) + "/" + (maxSlice-minSlice+1) + ": " +
+				(getTime() - dbgSliceTime) + " ms");
 		
 	if ((nSlices() > 1) && (s < maxSlice)) {
 		// Delete all ROIs except first two.
@@ -274,6 +285,8 @@ for (s = minSlice; s <= maxSlice; s++) {
 } // iterate slices
 
 print("Analysis finished.");
+if (DEBUG)
+	print("Total time: " + (getTime() - dbgTotTime) + " ms");
 
 if (oneFile)
 	File.close(f);
