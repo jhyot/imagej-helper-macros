@@ -43,3 +43,5 @@ for (i = 0; i < tnum; i++) {
 }
 
 String.copy(s);
+
+showStatus("Slice timings copied to clipboard.");
