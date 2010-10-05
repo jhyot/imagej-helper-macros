@@ -15,7 +15,8 @@ sarr = newArray(snum);
 for (i = 0; i < snum; i++) {
 	Ext.setSeries(i);
 	Ext.getSeriesName(sname);
-	sarr[i] = sname;
+	Ext.getImageCount(tnum);
+	sarr[i] = sname + " (" + tnum + ")";
 }
 
 Dialog.create("Choose series");
