@@ -22,10 +22,12 @@ for (i = 0; i < snum; i++) {
 
 Dialog.create("Choose series");
 Dialog.addChoice("Series name", sarr);
+Dialog.addCheckbox("Remove last time point", true);
 
 Dialog.show();
 
 schoicestr = Dialog.getChoice();
+removelast = Dialog.getCheckbox();
 
 for (i = 0; i < snum; i++) {
 	if (sarr[i] == schoicestr)
@@ -35,6 +37,9 @@ for (i = 0; i < snum; i++) {
 Ext.setSeries(schoicenum);
 Ext.getSizeC(cnum);
 Ext.getSizeT(tnum);
+
+if (removelast)
+	tnum -= 1;
 
 truecnum = 0;
 
