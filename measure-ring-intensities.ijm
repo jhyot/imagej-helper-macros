@@ -49,10 +49,10 @@ y0 = yarr[0];
 
 // get user input
 Dialog.create("Ring intensity measurement");
-Dialog.addNumber("Count intensity within radius [px]", 7);
-Dialog.addNumber("Measure background within radius [px]", 26);
+Dialog.addNumber("Count intensity within radius [px]", 8);
+Dialog.addNumber("Measure background within radius [px]", 25);
 Dialog.addNumber("Median filter radius for BG [px] (0 = no median filter)", 1);
-Dialog.addNumber("Distance between rings [px]", 26);
+Dialog.addNumber("Distance between rings [px]", 25.9);
 Dialog.addNumber("Number of rings n*n; n=", 10);
 Dialog.addNumber("First ring x coord", x0);
 Dialog.addNumber("First ring y coord", y0);
