@@ -114,6 +114,7 @@ if ((oneFile) || (nSlices() <= 1)) {
 	// Open file and write header
 	f = File.open(filePath);
 	print(f, "File=" + getInfo("image.filename"));
+	print(f, "Title=" + getTitle());
 	print(f, "Arraysize=" + nRings);
 	print(f, "IntRadiusPx=" + rInt);
 	print(f, "BgRadiusPx=" + rBg);
@@ -192,6 +193,7 @@ for (s = minSlice; s <= maxSlice; s++) {
 			sPadded = "" + s;
 		f = File.open(dirPath + getInfo("image.filename") + "." + sPadded);
 		print(f, "File=" + getInfo("image.filename"));
+		print(f, "Title=" + getTitle());
 		print(f, "Arraysize=" + nRings);
 		print(f, "IntRadiusPx=" + rInt);
 		print(f, "BgRadiusPx=" + rBg);
