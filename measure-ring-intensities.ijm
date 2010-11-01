@@ -82,6 +82,7 @@ if (!correctRoi) {
 
 // get user input
 Dialog.create("Ring intensity measurement");
+Dialog.addCheckbox("Read parameters from file (ignore values below)", false);
 Dialog.addNumber("Count intensity within radius [px]", rInt);
 Dialog.addNumber("Measure background within radius [px]", rBg);
 Dialog.addNumber("Median filter radius for BG [px] (0 = no median filter)", rBgMedian);
@@ -92,14 +93,53 @@ Dialog.addNumber("First ring y coord", y0);
 Dialog.addNumber("Grid angle [deg]", 180/PI * angle);
 Dialog.show();
 
-rInt = Dialog.getNumber();
-rBg = Dialog.getNumber();
-rBgMedian = Dialog.getNumber();
-ringDist = Dialog.getNumber();
-nRings = Dialog.getNumber();
-x0 = Dialog.getNumber();
-y0 = Dialog.getNumber();
-angle = PI/180*Dialog.getNumber(); // convert to radians
+if (Dialog.getCheckbox()) {
+	// Get parameters from file
+	paramFile = File.openAsString("");
+	paramLines = split(paramFile, "\n");
+	
+	for (i = 0; i < lengthOf(paramLines); i++) {
+		param = split(paramLines[i], "=");
+		
+		if (lengthOf(param) >= 2)
+			paramFloat = parseFloat(param[1]);
+		else
+			paramFloat = NaN;
+
+		if (!isNaN(paramFloat)) {
+			// Extract params.
+			// If not found, will leave as default
+			// ATTN: if x0, y0 and angle was extracted from ROIs,
+			// these are the new "default" values
+			if (param[0] == "IntRadiusPx")
+				rInt = paramFloat;
+			else if (param[0] == "BgRadiusPx")
+				rBg = paramFloat;
+			else if (param[0] == "BgMedianPx")
+				rBgMedian = paramFloat;
+			else if (param[0] == "RingDistPx")
+				ringDist = paramFloat;
+			else if (param[0] == "Arraysize")
+				nRings = paramFloat;
+			else if (param[0] == "FirstRingX")
+				x0 = paramFloat;
+			else if (param[0] == "FirstRingY")
+				y0 = paramFloat;
+			else if (param[0] == "GridAngleDeg")
+				angle = PI/180 * paramFloat;
+		}
+	}
+	
+} else {
+	rInt = Dialog.getNumber();
+	rBg = Dialog.getNumber();
+	rBgMedian = Dialog.getNumber();
+	ringDist = Dialog.getNumber();
+	nRings = Dialog.getNumber();
+	x0 = Dialog.getNumber();
+	y0 = Dialog.getNumber();
+	angle = PI/180 * Dialog.getNumber(); // convert to radians
+}
 
 // If image is stack, ask additional options
 if (nSlices() > 1) {
