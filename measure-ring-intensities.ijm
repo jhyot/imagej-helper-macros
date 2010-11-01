@@ -7,6 +7,7 @@
 DEBUG = true;
 
 origImg = getImageID();
+selectImage(origImg);
 
 setBatchMode(true);
 
@@ -218,6 +219,9 @@ for (s = minSlice; s <= maxSlice; s++) {
 	
 	// duplicate image for median filtering and background determination
 	run("Duplicate...", "tempduplicatebg");
+	duplImg = getImageID();
+	selectImage(duplImg);
+	
 	if (rBgMedian > 0) {
 		run("Median...", "radius="+rBgMedian);
 	}
@@ -243,6 +247,8 @@ for (s = minSlice; s <= maxSlice; s++) {
 	
 	// close duplicated image
 	close();
+	
+	selectImage(origImg);
 
 	ringIntAvg = newArray(nRings*nRings);
 	ringIntSum = newArray(nRings*nRings);
