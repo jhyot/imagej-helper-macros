@@ -345,6 +345,7 @@ for (s = minSlice; s <= maxSlice; s++) {
 } // iterate slices
 
 print("Analysis finished.");
+showStatus("Analysis finished.");
 if (DEBUG)
 	print("Total time: " + (getTime() - dbgTotTime) + " ms");
 
