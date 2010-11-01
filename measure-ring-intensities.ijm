@@ -4,6 +4,36 @@
 // one file per slice in stack)
 // or as averaged values in a single file (one row per slice)
 
+
+// == PARAMETER DEFAULT VALUES ==
+
+// Measure ring intensity within radius [px]
+rInt = 8;
+
+// Measure background intensity within radius [px]
+rBg = 25;
+
+// Median filter radius for background [px] (0 = no filter)
+rBgMedian = 1;
+
+// Distance between two rings [px]
+ringDist = 25.9;
+
+// Grid side length [rings]
+nRings = 10;
+
+// First ring x coordinate [px]
+x0 = 0;
+
+// First ring y coordinate [px]
+y0 = 0;
+
+// Grid angle [radians]
+angle = 0;
+
+// == END PARAMETER DEFAULT VALUES ==
+
+
 DEBUG = true;
 
 origImg = getImageID();
@@ -43,23 +73,23 @@ if (roiManager("count") == 2) {
 
 
 if (!correctRoi) {
-	showMessageWithCancel("Unable to automatically extract grid angle and position.\nExactly 1 line and 1 point ROI needs to be defined.\nContinue anyway?");
-	
-	x0 = 0;
-	y0 = 0;
-	angle = 0;
+	showMessageWithCancel("Unable to automatically extract grid angle and position.\n" +
+				"Exactly 1 line and 1 point ROI needs to be defined.\n" +
+				"Continue anyway?");
 }
+
+
 
 // get user input
 Dialog.create("Ring intensity measurement");
-Dialog.addNumber("Count intensity within radius [px]", 8);
-Dialog.addNumber("Measure background within radius [px]", 25);
-Dialog.addNumber("Median filter radius for BG [px] (0 = no median filter)", 1);
-Dialog.addNumber("Distance between rings [px]", 25.9);
-Dialog.addNumber("Number of rings n*n; n=", 10);
+Dialog.addNumber("Count intensity within radius [px]", rInt);
+Dialog.addNumber("Measure background within radius [px]", rBg);
+Dialog.addNumber("Median filter radius for BG [px] (0 = no median filter)", rBgMedian);
+Dialog.addNumber("Distance between rings [px]", ringDist);
+Dialog.addNumber("Number of rings n*n; n=", nRings);
 Dialog.addNumber("First ring x coord", x0);
 Dialog.addNumber("First ring y coord", y0);
-Dialog.addNumber("Grid angle [deg]", 180/PI*angle);
+Dialog.addNumber("Grid angle [deg]", 180/PI * angle);
 Dialog.show();
 
 rInt = Dialog.getNumber();
@@ -94,7 +124,7 @@ if (maxSlice < minSlice) {
 }
 
 // calculate x, y steps between rings
-stepx = ringDist * cos(angle);
+stepx = ringDist*cos(angle);
 stepy = -1 * ringDist * sin(angle); // in image, "up" is negative y
 
 print("=========");
