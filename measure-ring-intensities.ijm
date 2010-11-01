@@ -10,42 +10,44 @@ origImg = getImageID();
 
 setBatchMode(true);
 
-// check if exactly two ROIs defined
-
-if (roiManager("count") != 2) {
-	setBatchMode(false);
-	exit("Need exactly 1 line ROI and 1 dot ROI");
+// if line and dot ROI defined
+// use them to extract grid position and angle
+correctRoi = false;
+if (roiManager("count") == 2) {
+	// select first defined ROI (line for angle measurement)
+	roiManager("select", 0);
+	
+	if (selectionType() == 5) {
+		getLine(x1, y1, x2, y2, w);
+		dx = x2-x1;
+		dy = y2-y1;
+		d = sqrt(dx*dx + dy*dy);
+		angle = acos(dx/d);
+		if (dy > 0) {
+			angle *= -1;
+		}
+		
+		// select second ROI (for starting ring center)
+		roiManager("select", 1);
+		if (selectionType() == 10) {
+			getSelectionCoordinates(xarr, yarr);
+			x0 = xarr[0];
+			y0 = yarr[0];
+			
+			// Correctly extracted grid angle and pos from ROIs
+			correctRoi = true;
+		}
+	}
 }
 
 
-// select first defined ROI (line for angle measurement)
-roiManager("select", 0);
-
-if (selectionType() != 5) {
-	setBatchMode(false);
-	exit("First ROI needs to be a line");
+if (!correctRoi) {
+	showMessageWithCancel("Unable to automatically extract grid angle and position.\nExactly 1 line and 1 point ROI needs to be defined.\nContinue anyway?");
+	
+	x0 = 0;
+	y0 = 0;
+	angle = 0;
 }
-
-getLine(x1, y1, x2, y2, w);
-dx = x2-x1;
-dy = y2-y1;
-d = sqrt(dx*dx + dy*dy);
-angle = acos(dx/d);
-if (dy > 0) {
-	angle *= -1;
-}
-
-// select second ROI (for starting ring center)
-roiManager("select", 1);
-if (selectionType() != 10) {
-	setBatchMode(false);
-	exit("Second ROI needs to be a point");
-}
-
-getSelectionCoordinates(xarr, yarr);
-x0 = xarr[0];
-y0 = yarr[0];
-
 
 // get user input
 Dialog.create("Ring intensity measurement");
@@ -143,6 +145,8 @@ if ((oneFile) || (nSlices() <= 1)) {
 if (DEBUG)
 	dbgTotTime = getTime();
 
+existingRoiNum = roiManager("count");
+
 // Create ROIs for rings and background
 for (i = 0; i < nRings; i++) {   // "rows"
 	for (j = 0; j < nRings; j++) {    // within row
@@ -222,11 +226,12 @@ for (s = minSlice; s <= maxSlice; s++) {
 	
 	// step through each ring BG ROI, save min pixel value; average = background
 	for (i = 0; i < nRings*nRings; i++) {
-		roiManager("select", 2*i+3);   // first 2 ROIs are line and point; then every 2nd ROI
+		// every 2nd ROI after previously existing ones
+		roiManager("select", 2*i + existingRoiNum + 1);
 		if (selectionType() != 1) {
 			File.close(f);	
 			setBatchMode(false);
-			exit("ROI " + (2*i+3) + " not an oval");
+			exit("ROI " + (2*i + existingRoiNum + 1) + " not an oval");
 		}
 		getRawStatistics(npx, mean, min);
 		ringMin[i] = min;
@@ -244,11 +249,12 @@ for (s = minSlice; s <= maxSlice; s++) {
 
 	// step through each ring ROI, save sum and avg pixel value
 	for (i = 0; i < nRings*nRings; i++) {
-		roiManager("select", 2*i+2);   // first 2 ROIs are line and point; then every 2nd ROI
+		// every 2nd ROI after previously existing ones
+		roiManager("select", 2*i + existingRoiNum);
 		if (selectionType() != 1) {
 			File.close(f);	
 			setBatchMode(false);
-			exit("ROI " + (2*i+3) + " not an oval");
+			exit("ROI " + (2*i + existingRoiNum) + " not an oval");
 		}
 		getRawStatistics(npx, mean);
 		ringIntAvg[i] = mean - bgAvg;
