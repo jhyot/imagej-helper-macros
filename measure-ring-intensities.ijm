@@ -137,12 +137,12 @@ if ((oneFile) || (nSlices() <= 1)) {
 		// not a stack
 		print(f, "Stack=false");
 		// write column names
-		print(f, "xpos ypos intsum intavg bgint");
+		print(f, "xpos\typos\tintsum\tintavg\tbgint");
 	} else {
 		print(f, "Stack=true");
 		print(f, "MinSlice=" + minSlice);
 		print(f, "MaxSlice=" + maxSlice);
-		print(f, "slice intsum intsumsd intavg intavgsd bg bgsd");
+		print(f, "slice\tintsum\tintsumsd\tintavg\tintavgsd\tbg\tbgsd");
 	}
 } else {
 	// One file per slice, ask for directory; define file names automatically
@@ -217,7 +217,7 @@ for (s = minSlice; s <= maxSlice; s++) {
 		print(f, "StepY=" + stepy);
 		print(f, "Stack=true");
 		print(f, "Slice=" + s);
-		print(f, "xpos ypos intsum intavg bgint");
+		print(f, "xpos\typos\tintsum\tintavg\tbgint");
 	}
 	
 	
@@ -275,8 +275,8 @@ for (s = minSlice; s <= maxSlice; s++) {
 		
 		getSelectionBounds(x, y, w, h);
 		if (!oneFile) {
-			print(f, (x+rInt) + " " + (y+rInt) + " " +
-				ringIntSum[i] + " " + ringIntAvg[i] + " " + ringMin[i]);
+			print(f, (x+rInt) + "\t" + (y+rInt) + "\t" +
+				ringIntSum[i] + "\t" + ringIntAvg[i] + "\t" + ringMin[i]);
 		}
 	}
 	
@@ -289,9 +289,9 @@ for (s = minSlice; s <= maxSlice; s++) {
 	ringIntAvgSd = sd;
 	
 	if (oneFile) {
-		print(f, s + " " + ringIntSumAvg + " " + ringIntSumSd + " " +
-			ringIntAvgAvg + " " + ringIntAvgSd + " " +
-			bgAvg + " " + bgSd);
+		print(f, s + "\t" + ringIntSumAvg + "\t" + ringIntSumSd + "\t" +
+			ringIntAvgAvg + "\t" + ringIntAvgSd + "\t" +
+			bgAvg + "\t" + bgSd);
 	}
 	
 	
@@ -301,10 +301,10 @@ for (s = minSlice; s <= maxSlice; s++) {
 	// If multiple files, write summary and close current file
 	if (!oneFile) {
 		print(f, "");
-		print(f, "intsum intsumsd intavg intavgsd bg bgsd");
-		print(f, ringIntSumAvg + " " + ringIntSumSd + " " +
-			ringIntAvgAvg + " " + ringIntAvgSd + " " +
-			bgAvg + " " + bgSd);
+		print(f, "intsum\tintsumsd\tintavg\tintavgsd\tbg\tbgsd");
+		print(f, ringIntSumAvg + "\t" + ringIntSumSd + "\t" +
+			ringIntAvgAvg + "\t" + ringIntAvgSd + "\t" +
+			bgAvg + "\t" + bgSd);
 		File.close(f);
 	}
 	
