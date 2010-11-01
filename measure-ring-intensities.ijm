@@ -175,8 +175,8 @@ if ((oneFile) || (nSlices() <= 1)) {
 		print(f, "slice\tintsum\tintsumsd\tintavg\tintavgsd\tbg\tbgsd");
 	}
 } else {
-	// One file per slice, ask for directory; define file names automatically
-	dirPath = getDirectory("Choose directory for result files");
+	// One file per slice, ask for base filename
+	fileBasePath = File.openDialog("Choose base filename for result files");
 }
 
 if (DEBUG)
@@ -232,7 +232,7 @@ for (s = minSlice; s <= maxSlice; s++) {
 			sPadded = "0" + s;
 		else
 			sPadded = "" + s;
-		f = File.open(dirPath + getInfo("image.filename") + "." + sPadded);
+		f = File.open(fileBasePath + "." + sPadded);
 		print(f, "File=" + getInfo("image.filename"));
 		print(f, "Title=" + getTitle());
 		print(f, "Arraysize=" + nRings);
