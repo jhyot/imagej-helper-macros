@@ -101,6 +101,11 @@ print("=========");
 print("Analyzing " + nRings + " x " + nRings + " array");
 print("Count intensity within radius " + rInt + " px");
 print("Background radius " + rBg + " px");
+if (rBgMedian > 0) {
+	print("BG median filter: " + rBgMedian + " px");
+} else {
+	print("No BG median filter applied");
+}
 print("Grid angle: " + 180/PI*angle + " deg");
 print("Distance between rings: " + ringDist + " px");
 print("First ring: x=" + x0 + " ; y=" + y0);
@@ -121,6 +126,7 @@ if ((oneFile) || (nSlices() <= 1)) {
 	print(f, "Arraysize=" + nRings);
 	print(f, "IntRadiusPx=" + rInt);
 	print(f, "BgRadiusPx=" + rBg);
+	print(f, "BgMedianPx=" + rBgMedian);
 	print(f, "GridAngleDeg=" + 180/PI*angle);
 	print(f, "RingDistPx=" + ringDist);
 	print(f, "FirstRingX=" + x0);
@@ -202,6 +208,7 @@ for (s = minSlice; s <= maxSlice; s++) {
 		print(f, "Arraysize=" + nRings);
 		print(f, "IntRadiusPx=" + rInt);
 		print(f, "BgRadiusPx=" + rBg);
+		print(f, "BgMedianPx=" + rBgMedian);
 		print(f, "GridAngleDeg=" + 180/PI*angle);
 		print(f, "RingDistPx=" + ringDist);
 		print(f, "FirstRingX=" + x0);
