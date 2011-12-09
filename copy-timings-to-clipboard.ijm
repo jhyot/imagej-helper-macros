@@ -110,9 +110,9 @@ do {
 			}
 		}
 		out = out + "\n";
-		totaltnum += tarr[s];
 	}
-	
+
+	totaltnum += tarr[s];
 	s++;
 } while (s <= rangetonum);
 
