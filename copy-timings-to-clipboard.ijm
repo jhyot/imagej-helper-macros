@@ -3,6 +3,8 @@
 // Timings are copied to the clipboard with each slice separated
 // by a newline.
 
+// Author: Janne Hyötylä, 2010
+
 run("Bio-Formats Macro Extensions");
 
 id = File.openDialog("Choose a file");
