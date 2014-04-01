@@ -4,20 +4,39 @@
 // one file per slice in stack)
 // or as averaged values in a single file (one row per slice)
 
+// Methods for background:
+// Median min: Takes minimal value around ring from median filtered image as BG value.
+//	       Subtracts BG value from avg ring intensity.
+// Avg normalized: Takes average value within bounds of an inner circle and outer rectangle as BG value.
+//		   Divides avg ring intensity by BG value.
+// No BG: Does not do any background correction.
 
+
+// ==============================
 // == PARAMETER DEFAULT VALUES ==
+// ==============================
 
 // Measure ring intensity within radius [px]
 rInt = 8;
 
-// Measure background intensity within radius [px]
+// Default method, one of:
+// "Median min";  "Avg normalized"; "No BG"
+bgMethod = "No BG";
+
+// Measure background intensity within radius (median min method) [px]
 rBg = 25;
 
-// Median filter radius for background [px] (0 = no filter)
+// Median filter radius for background (median min method) [px] (0 = no filter)
 rBgMedian = 1;
 
+// Background inner radius (avg normalized method) [px]
+rBgInner = 10;
+
+// Background outer radius (avg normalized method) [px]
+rBgOuter = 13;
+
 // Distance between two rings [px]
-ringDist = 25.9;
+ringDist = 25.8;
 
 // Grid side length [rings]
 nRings = 10;
@@ -31,15 +50,23 @@ y0 = 0;
 // Grid angle [radians]
 angle = 0;
 
+// Read parameters from file?
+readParamFromFile = false;
+
+// When stack, save only one file with summary measurements?
+oneFile = true;
+
+// ==================================
 // == END PARAMETER DEFAULT VALUES ==
+// ==================================
 
 
 DEBUG = true;
 
+setBatchMode(true);
+
 origImg = getImageID();
 selectImage(origImg);
-
-setBatchMode(true);
 
 // if line and dot ROI defined
 // use them to extract grid position and angle
@@ -78,20 +105,26 @@ if (!correctRoi) {
 				"Continue anyway?");
 }
 
-
+bgMethodArr = newArray("Median min", "Avg normalized", "No BG");
 
 // get user input
 Dialog.create("Ring intensity measurement");
-Dialog.addCheckbox("Read parameters from file (ignore values below)", false);
+Dialog.addChoice("Background method:", bgMethodArr, bgMethod);
+Dialog.addCheckbox("Read parameters from file (ignore values below)", readParamFromFile);
 Dialog.addNumber("Count intensity within radius [px]", rInt);
-Dialog.addNumber("Measure background within radius [px]", rBg);
+Dialog.addNumber("Background radius (median min method) [px]", rBg);
 Dialog.addNumber("Median filter radius for BG [px] (0 = no median filter)", rBgMedian);
+Dialog.addNumber("Background inner radius (avg normalized method) [px]", rBgInner);
+Dialog.addNumber("Background outer radius (avg normalized method) [px]", rBgOuter);
 Dialog.addNumber("Distance between rings [px]", ringDist);
 Dialog.addNumber("Number of rings n*n; n=", nRings);
 Dialog.addNumber("First ring x coord", x0);
 Dialog.addNumber("First ring y coord", y0);
 Dialog.addNumber("Grid angle [deg]", 180/PI * angle);
 Dialog.show();
+
+
+bgMethod = Dialog.getChoice();
 
 if (Dialog.getCheckbox()) {
 	// Get parameters from file
@@ -117,6 +150,10 @@ if (Dialog.getCheckbox()) {
 				rBg = paramFloat;
 			else if (param[0] == "BgMedianPx")
 				rBgMedian = paramFloat;
+			else if (param[0] == "BgInnerRadiusPx")
+				rBgInner = paramFloat;
+			else if (param[0] == "BgOuterRadiusPx")
+				rBgOuter = paramFloat;
 			else if (param[0] == "RingDistPx")
 				ringDist = paramFloat;
 			else if (param[0] == "Arraysize")
@@ -134,6 +171,8 @@ if (Dialog.getCheckbox()) {
 	rInt = Dialog.getNumber();
 	rBg = Dialog.getNumber();
 	rBgMedian = Dialog.getNumber();
+	rBgInner = Dialog.getNumber();
+	rBgOuter = Dialog.getNumber();
 	ringDist = Dialog.getNumber();
 	nRings = Dialog.getNumber();
 	x0 = Dialog.getNumber();
@@ -146,7 +185,7 @@ if (nSlices() > 1) {
 	Dialog.create("Measure slices");
 	Dialog.addNumber("Start with slice", 1);
 	Dialog.addNumber("End with slice", nSlices());
-	Dialog.addCheckbox("Create only one file with totals", true);
+	Dialog.addCheckbox("Create only one file with totals", oneFile);
 	Dialog.show();
 	
 	minSlice = Dialog.getNumber();
@@ -170,11 +209,20 @@ stepy = -1 * ringDist * sin(angle); // in image, "up" is negative y
 print("=========");
 print("Analyzing " + nRings + " x " + nRings + " array");
 print("Count intensity within radius " + rInt + " px");
-print("Background radius " + rBg + " px");
-if (rBgMedian > 0) {
-	print("BG median filter: " + rBgMedian + " px");
+print("Background method: " + bgMethod);
+if (bgMethod == "Median min") {
+	print("Background radius " + rBg + " px");
+	if (rBgMedian > 0) {
+		print("BG median filter: " + rBgMedian + " px");
+	} else {
+		print("No BG median filter applied");
+	}
+} else if (bgMethod == "Avg normalized") {
+	print("Background between radius " + rBgInner + " px and " + rBgOuter + " px");
+} else if (bgMethod == "No BG") {
+	// Nothing to print
 } else {
-	print("No BG median filter applied");
+	print("Background method unknown");
 }
 print("Grid angle: " + 180/PI*angle + " deg");
 print("Distance between rings: " + ringDist + " px");
@@ -195,8 +243,11 @@ if ((oneFile) || (nSlices() <= 1)) {
 	print(f, "Title=" + getTitle());
 	print(f, "Arraysize=" + nRings);
 	print(f, "IntRadiusPx=" + rInt);
+	print(f, "BgMethod=" + bgMethod);
 	print(f, "BgRadiusPx=" + rBg);
 	print(f, "BgMedianPx=" + rBgMedian);
+	print(f, "BgInnerPx=" + rBgInner);
+	print(f, "BgOuterPx=" + rBgOuter);
 	print(f, "GridAngleDeg=" + 180/PI*angle);
 	print(f, "RingDistPx=" + ringDist);
 	print(f, "FirstRingX=" + x0);
@@ -236,19 +287,46 @@ for (i = 0; i < nRings; i++) {   // "rows"
 		currx -= i*stepy;
 		curry += i*stepx;
 		
-		// draw ring and background circles, add to ROI manager
+		// draw ring circle, add to ROI manager
 		// makeOval wants upper left corner of bounding rectangle as coords
 		makeOval(currx - rInt, curry - rInt, rInt*2, rInt*2);
 		roiManager("Add");
-		makeOval(currx - rBg, curry - rBg, rBg*2, rBg*2);
-		roiManager("Add");
+		
+		// draw background ROIs and add to ROI manager, depending on BG Method
+		if (bgMethod == "Median min") {
+			makeOval(currx - rBg, curry - rBg, rBg*2, rBg*2);
+			roiManager("Add");
+		} else if (bgMethod == "Avg normalized") {
+			makeOval(currx - rBgInner, curry - rBgInner, rBgInner*2, rBgInner*2);
+			roiManager("Add");
+			makeRectangle(currx - rBgOuter, curry - rBgOuter, rBgOuter*2, rBgOuter*2);
+			roiManager("Add");
+		} else if (bgMethod == "No BG") {
+			// Do nothing
+		} else {
+			exit("Background method unknown: " + bgMethod);
+		}
 		
 		// Rename ROIs so they become slice-independent
 		k = i*nRings + j + 1;
-		roiManager("Select", roiManager("count") - 2);
-		roiManager("Rename", "r" + k);
-		roiManager("Select", roiManager("count") - 1);
-		roiManager("Rename", "b" + k);
+		if (bgMethod == "Median min") {
+			roiManager("Select", roiManager("count") - 2);
+			roiManager("Rename", "r" + k);
+			roiManager("Select", roiManager("count") - 1);
+			roiManager("Rename", "b" + k);
+		} else if (bgMethod == "Avg normalized") {
+			roiManager("Select", roiManager("count") - 3);
+			roiManager("Rename", "r" + k);
+			roiManager("Select", roiManager("count") - 2);
+			roiManager("Rename", "bi" + k);
+			roiManager("Select", roiManager("count") - 1);
+			roiManager("Rename", "bo" + k);
+		} else if (bgMethod == "No BG") {
+			roiManager("Select", roiManager("count") - 1);
+			roiManager("Rename", "r" + k);
+		} else {
+			exit("Background method unknown: " + bgMethod);
+		}
 	}
 }
 
@@ -277,8 +355,11 @@ for (s = minSlice; s <= maxSlice; s++) {
 		print(f, "Title=" + getTitle());
 		print(f, "Arraysize=" + nRings);
 		print(f, "IntRadiusPx=" + rInt);
+		print(f, "BgMethod=" + bgMethod);
 		print(f, "BgRadiusPx=" + rBg);
 		print(f, "BgMedianPx=" + rBgMedian);
+		print(f, "BgInnerPx=" + rBgInner);
+		print(f, "BgOuterPx=" + rBgOuter);
 		print(f, "GridAngleDeg=" + 180/PI*angle);
 		print(f, "RingDistPx=" + ringDist);
 		print(f, "FirstRingX=" + x0);
@@ -294,59 +375,128 @@ for (s = minSlice; s <= maxSlice; s++) {
 	roiManager("Deselect");
 	run("Select None");
 	
-	// duplicate image for median filtering and background determination
-	run("Duplicate...", "tempduplicatebg");
-	duplImg = getImageID();
-	selectImage(duplImg);
+	// Find out background values for each ring
+	// Algorithm depends on Method
 	
-	if (rBgMedian > 0) {
-		run("Median...", "radius="+rBgMedian);
-	}
+	ringBg = newArray(nRings*nRings);
 	
-	ringMin = newArray(nRings*nRings);
-	
-	// step through each ring BG ROI, save min pixel value; average = background
-	for (i = 0; i < nRings*nRings; i++) {
-		// every 2nd ROI after previously existing ones
-		roiManager("select", 2*i + existingRoiNum + 1);
-		if (selectionType() != 1) {
-			File.close(f);	
-			setBatchMode(false);
-			exit("ROI " + (2*i + existingRoiNum + 1) + " not an oval");
+	if (bgMethod == "Median min") {
+		// For BG method "median min"
+		// duplicate image for median filtering and background determination
+		run("Duplicate...", "tempduplicatebg");
+		duplImg = getImageID();
+		selectImage(duplImg);
+		
+		if (rBgMedian > 0) {
+			run("Median...", "radius="+rBgMedian);
 		}
-		getRawStatistics(npx, mean, min);
-		ringMin[i] = min;
+		
+		// step through each ring BG ROI, save min pixel value ( = background)
+		for (i = 0; i < nRings*nRings; i++) {
+			// every 2nd ROI after previously existing ones
+			roiManager("select", 2*i + existingRoiNum + 1);
+			if (selectionType() != 1) {
+				File.close(f);	
+				setBatchMode(false);
+				exit("ROI " + (2*i + existingRoiNum + 1) + " not an oval");
+			}
+			getRawStatistics(npx, mean, min);
+			ringBg[i] = min;
+		}
+	
+		// close duplicated image
+		close();
+	
+		selectImage(origImg);
+		
+	} else if (bgMethod == "Avg normalized") {
+		// For BG method "avg normalized",
+		// Determine average intensity within bounds
+		
+		// select the BG ROIs, calculate avg intensity for each ring ( = background)
+		for (i = 0; i < nRings*nRings; i++) {
+			// 2nd and 3rd ROI of 3-ROI "bundle" per ring after the existing ones
+			roiManager("select", 3*i + existingRoiNum + 1);
+			if (selectionType() != 1) {
+				File.close(f);	
+				setBatchMode(false);
+				exit("ROI " + (3*i + existingRoiNum + 1) + " not an oval");
+			}
+			
+			getRawStatistics(npx, mean);
+			intDenInner = npx * mean;
+			npxInner = npx;
+			
+			roiManager("select", 3*i + existingRoiNum + 2);
+			if (selectionType() != 0) {
+				File.close(f);	
+				setBatchMode(false);
+				exit("ROI " + (3*i + existingRoiNum + 2) + " not a rectangle");
+			}
+			
+			getRawStatistics(npx, mean);
+			intDenOuter = npx * mean;
+			npxOuter = npx;
+			
+			ringBg[i] = (intDenOuter - intDenInner) /
+				     (npxOuter - npxInner);			
+		}		
+	} else if (bgMethod == "No BG") {
+		// Do nothing
+	} else {
+		exit("Background method unknown: " + bgMethod);
 	}
 	
-	Array.getStatistics(ringMin, min, max, mean, sd);
+	Array.getStatistics(ringBg, min, max, mean, sd);
 	bgAvg = mean;
 	bgSd = sd;
-	
-	// close duplicated image
-	close();
-	
-	selectImage(origImg);
 
+
+	// Get intensities for each ring
+	
 	ringIntAvg = newArray(nRings*nRings);
 	ringIntSum = newArray(nRings*nRings);
 
 	// step through each ring ROI, save sum and avg pixel value
 	for (i = 0; i < nRings*nRings; i++) {
-		// every 2nd ROI after previously existing ones
-		roiManager("select", 2*i + existingRoiNum);
+		if (bgMethod == "Median min") {
+			// every 2nd ROI after previously existing ones
+			roinum = 2*i + existingRoiNum;
+		} else if (bgMethod == "Avg normalized") {
+			// every 3rd ROI after previously existing ones
+			roinum = 3*i + existingRoiNum;
+		} else if (bgMethod == "No BG") {
+			// each ROI after previously existing ones
+			roinum = i + existingRoiNum;
+		} else {
+			exit("Background method unknown: " + bgMethod);
+		}
+		
+		roiManager("select", roinum);
+		
 		if (selectionType() != 1) {
 			File.close(f);	
 			setBatchMode(false);
-			exit("ROI " + (2*i + existingRoiNum) + " not an oval");
+			exit("ROI " + roinum + " not an oval");
 		}
 		getRawStatistics(npx, mean);
-		ringIntAvg[i] = mean - bgAvg;
-		ringIntSum[i] = ringIntAvg[i] * npx;
+		
+		if (bgMethod == "Median min") {
+			ringIntAvg[i] = mean - bgAvg;
+		} else if (bgMethod == "Avg normalized") {
+			ringIntAvg[i] = mean / ringBg[i];
+		} else if (bgMethod == "No BG") {
+			ringIntAvg[i] = mean;
+		} else {
+			exit("Background method unknown: " + bgMethod);
+		}
+		
+		ringIntSum[i] = mean * npx;
 		
 		getSelectionBounds(x, y, w, h);
 		if (!oneFile) {
 			print(f, (x+rInt) + "\t" + (y+rInt) + "\t" +
-				ringIntSum[i] + "\t" + ringIntAvg[i] + "\t" + ringMin[i]);
+				ringIntSum[i] + "\t" + ringIntAvg[i] + "\t" + ringBg[i]);
 		}
 	}
 	
@@ -384,8 +534,6 @@ for (s = minSlice; s <= maxSlice; s++) {
 
 } // iterate slices
 
-print("Analysis finished.");
-showStatus("Analysis finished.");
 if (DEBUG)
 	print("Total time: " + (getTime() - dbgTotTime) + " ms");
 
@@ -393,5 +541,8 @@ if (oneFile)
 	File.close(f);
 	
 setBatchMode(false);
+
+print("Analysis finished.");
+showStatus("Analysis finished.");
 
 
