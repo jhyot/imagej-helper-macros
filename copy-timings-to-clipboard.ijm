@@ -3,7 +3,7 @@
 // Timings are copied to the clipboard with each slice separated
 // by a newline.
 
-// Author: Janne Hyötylä, 2010
+// Author: Janne Hyotyla, 2010
 
 run("Bio-Formats Macro Extensions");
 
