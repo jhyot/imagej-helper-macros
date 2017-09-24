@@ -71,7 +71,7 @@ into a single file.
 References
 ----------
 Hyotyla, Janne T. *Nanomechanics of Confined Polymer Systems.*
-2016, PhD Thesis, University of Basel, Faculty of Science.
+2016, PhD Thesis, University of Basel, Faculty of Science. doi: 10.5451/unibas-006622415 ([download](http://edoc.unibas.ch/diss/DissB_11723))
 
 
 License
